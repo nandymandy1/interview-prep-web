@@ -44,22 +44,22 @@ const LoginForm: FC = () => {
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
+              required
               id="email"
               type="email"
-              autoComplete="email"
-              required
               value={email}
+              autoComplete="email"
               onChange={(event) => setEmail(event.target.value)}
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="password">Password</Label>
             <Input
+              required
               id="password"
               type="password"
-              autoComplete="current-password"
-              required
               value={password}
+              autoComplete="current-password"
               onChange={(event) => setPassword(event.target.value)}
             />
           </div>
@@ -67,9 +67,12 @@ const LoginForm: FC = () => {
             {login.isPending ? 'Signing in…' : 'Sign in'}
           </Button>
         </form>
-        <p className="mt-5 text-center text-sm text-muted-foreground">
+        <p className="text-muted-foreground mt-5 text-center text-sm">
           Need an account?{' '}
-          <Link className="font-medium text-foreground underline underline-offset-4" href={APP_ROUTES.register}>
+          <Link
+            className="text-foreground font-medium underline underline-offset-4"
+            href={APP_ROUTES.register}
+          >
             Register
           </Link>
         </p>

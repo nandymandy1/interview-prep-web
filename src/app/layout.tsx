@@ -1,12 +1,10 @@
-import type { FC, ReactNode } from 'react';
+import type { FC, PropsWithChildren } from 'react';
 import type { Metadata } from 'next';
 import '@/app/globals.css';
 import AppProvider from '@/providers/app.provider';
 import { APP_NAME } from '@/constants';
 
-type RootLayoutProps = Readonly<{
-  children: ReactNode;
-}>;
+type RootLayoutProps = Readonly<PropsWithChildren>;
 
 export const metadata: Metadata = {
   title: {
