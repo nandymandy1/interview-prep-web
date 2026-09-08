@@ -13,6 +13,7 @@ import KitList from '@/components/kits/kit-list';
 import { APP_ROUTES } from '@/constants';
 import { useKits } from '@/hooks/kits/use-kits';
 import { getErrorMessage } from '@/lib/error';
+import { getKitListErrorMessage } from '@/lib/kit-availability';
 
 const DashboardView: FC = () => {
   const kits = useKits();
@@ -35,7 +36,10 @@ const DashboardView: FC = () => {
       {kits.isPending && <LoadingState rows={4} />}
 
       {kits.isError && (
-        <ErrorState message={getErrorMessage(kits.error)} onRetry={() => kits.refetch()} />
+        <ErrorState
+          message={getKitListErrorMessage(kits.error) ?? getErrorMessage(kits.error)}
+          onRetry={() => kits.refetch()}
+        />
       )}
 
       {kits.data?.length === 0 ? (

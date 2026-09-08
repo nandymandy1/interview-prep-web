@@ -1,6 +1,13 @@
 import type { NextConfig } from 'next';
+import { resolveApiProxyTarget } from './src/lib/proxy-target';
 
-const apiProxyTarget = process.env.API_PROXY_TARGET?.replace(/\/$/, '');
+const apiProxyTarget = resolveApiProxyTarget(process.env.API_PROXY_TARGET);
+
+if (apiProxyTarget === undefined) {
+  console.warn(
+    '[web] API_PROXY_TARGET is missing or invalid — /api requests will NOT be proxied to Express.',
+  );
+}
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
