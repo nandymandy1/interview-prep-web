@@ -17,8 +17,8 @@ import { useLogin } from '@/hooks/auth/use-auth';
 import { getErrorMessage } from '@/lib/error';
 
 const LoginForm: FC = () => {
-  const router = useRouter();
   const login = useLogin();
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -67,10 +67,10 @@ const LoginForm: FC = () => {
             {login.isPending ? 'Signing in…' : 'Sign in'}
           </Button>
         </form>
-        <p className="text-muted-foreground mt-5 text-center text-sm">
+        <p className="mt-5 text-center text-sm text-muted-foreground">
           Need an account?{' '}
           <Link
-            className="text-foreground font-medium underline underline-offset-4"
+            className="font-medium text-foreground underline underline-offset-4"
             href={APP_ROUTES.register}
           >
             Register

@@ -32,11 +32,11 @@ const DashboardView: FC = () => {
         }
       />
 
-      {kits.isPending ? <LoadingState rows={4} /> : null}
+      {kits.isPending && <LoadingState rows={4} />}
 
-      {kits.isError ? (
+      {kits.isError && (
         <ErrorState message={getErrorMessage(kits.error)} onRetry={() => kits.refetch()} />
-      ) : null}
+      )}
 
       {kits.data?.length === 0 ? (
         <EmptyState
