@@ -23,7 +23,10 @@ export class AuthService {
   }
 
   login(input: LoginInput): Promise<AuthResult> {
-    return this.dependencies.apiClient.post<AuthResult, LoginInput>(API_ENDPOINTS.auth.login, input);
+    return this.dependencies.apiClient.post<AuthResult, LoginInput>(
+      API_ENDPOINTS.auth.login,
+      input,
+    );
   }
 
   logout(): Promise<LogoutResult> {

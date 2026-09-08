@@ -12,7 +12,7 @@ const GenerationProgress: FC<GenerationProgressProps> = ({ status }) => (
     <div>
       <div className="mb-2 flex items-center justify-between gap-4">
         <h2 className="font-semibold">Generating your kit</h2>
-        <span className="text-sm text-muted-foreground">{Math.round(status.progress)}%</span>
+        <span className="text-muted-foreground text-sm">{Math.round(status.progress)}%</span>
       </div>
       <Progress value={status.progress} />
     </div>

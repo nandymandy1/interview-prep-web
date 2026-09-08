@@ -37,7 +37,9 @@ const RegisterForm: FC = () => {
     <Card>
       <CardHeader>
         <CardTitle>Create account</CardTitle>
-        <CardDescription>Keep your interview kits private and available across sessions.</CardDescription>
+        <CardDescription>
+          Keep your interview kits private and available across sessions.
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <form className="space-y-4" onSubmit={handleSubmit}>
@@ -68,9 +70,12 @@ const RegisterForm: FC = () => {
             {register.isPending ? 'Creating account…' : 'Create account'}
           </Button>
         </form>
-        <p className="mt-5 text-center text-sm text-muted-foreground">
+        <p className="text-muted-foreground mt-5 text-center text-sm">
           Already registered?{' '}
-          <Link className="font-medium text-foreground underline underline-offset-4" href={APP_ROUTES.login}>
+          <Link
+            className="text-foreground font-medium underline underline-offset-4"
+            href={APP_ROUTES.login}
+          >
             Sign in
           </Link>
         </p>

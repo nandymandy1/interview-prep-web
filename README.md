@@ -3,6 +3,7 @@
 Next.js 16.3 + TypeScript frontend starter for the interview-preparation assessment.
 
 ## Stack
+
 - Next.js 16.3 App Router
 - React 19.2
 - TypeScript strict mode
@@ -31,6 +32,7 @@ npm run build
 ```
 
 ## HTTP rule
+
 Application code must not use the Fetch API. All network traffic goes through `ApiClientService`, which is backed by Axios. Feature services depend on that client through constructor injection.
 
 ## Directory ownership

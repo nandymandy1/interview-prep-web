@@ -7,7 +7,10 @@ const Label: FC<LabelProps> = ({ className, ...props }) => {
   return (
     <label
       data-slot="label"
-      className={cn('text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70', className)}
+      className={cn(
+        'text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70',
+        className,
+      )}
       {...props}
     />
   );

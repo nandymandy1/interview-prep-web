@@ -18,7 +18,8 @@ const ProtectedRoute: FC<ProtectedRouteProps> = ({ children }) => {
   const router = useRouter();
   const authStatus = useAuthStore((state) => state.status);
   const currentUser = useCurrentUser();
-  const unauthorized = currentUser.error instanceof ApiClientError && currentUser.error.statusCode === 401;
+  const unauthorized =
+    currentUser.error instanceof ApiClientError && currentUser.error.statusCode === 401;
 
   useEffect(() => {
     if (authStatus === 'unauthenticated' || unauthorized) {
@@ -29,7 +30,10 @@ const ProtectedRoute: FC<ProtectedRouteProps> = ({ children }) => {
   if (currentUser.isError && !unauthorized) {
     return (
       <main className="mx-auto w-full max-w-5xl px-4 py-10">
-        <ErrorState message={getErrorMessage(currentUser.error)} onRetry={() => currentUser.refetch()} />
+        <ErrorState
+          message={getErrorMessage(currentUser.error)}
+          onRetry={() => currentUser.refetch()}
+        />
       </main>
     );
   }

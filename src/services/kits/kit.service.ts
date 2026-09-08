@@ -46,7 +46,11 @@ export class KitService {
     );
   }
 
-  updateQuestion(kitId: string, questionId: string, input: UpdateQuestionInput): Promise<InterviewKit> {
+  updateQuestion(
+    kitId: string,
+    questionId: string,
+    input: UpdateQuestionInput,
+  ): Promise<InterviewKit> {
     return this.dependencies.apiClient.patch<InterviewKit, UpdateQuestionInput>(
       API_ENDPOINTS.kits.question(kitId, questionId),
       input,

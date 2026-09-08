@@ -1,0 +1,14 @@
+node_modules
+.next
+out
+dist
+build
+coverage
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
+.graphify
+graphify-out
+graphify_out
+next-env.d.ts

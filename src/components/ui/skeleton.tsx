@@ -4,7 +4,11 @@ import { cn } from '@/lib/utils';
 export type SkeletonProps = HTMLAttributes<HTMLDivElement>;
 
 const Skeleton: FC<SkeletonProps> = ({ className, ...props }) => (
-  <div data-slot="skeleton" className={cn('animate-pulse rounded-md bg-muted', className)} {...props} />
+  <div
+    data-slot="skeleton"
+    className={cn('bg-muted animate-pulse rounded-md', className)}
+    {...props}
+  />
 );
 
 export default Skeleton;

@@ -45,7 +45,9 @@ export class ApiClientService {
         const responseBody = error.response?.data;
         const message =
           responseBody?.message ||
-          (error.code === 'ECONNABORTED' ? 'The request timed out.' : 'Unable to complete the request.');
+          (error.code === 'ECONNABORTED'
+            ? 'The request timed out.'
+            : 'Unable to complete the request.');
 
         return Promise.reject(new ApiClientError(message, statusCode, responseBody?.details));
       },

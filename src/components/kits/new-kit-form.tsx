@@ -78,11 +78,16 @@ const NewKitForm: FC = () => {
                 value={jd}
                 onChange={(event) => setJd(event.target.value)}
               />
-              <p className="text-xs text-muted-foreground">{jd.length.toLocaleString()} characters</p>
+              <p className="text-muted-foreground text-xs">
+                {jd.length.toLocaleString()} characters
+              </p>
             </div>
 
             <div className="flex justify-end">
-              <Button type="submit" disabled={createKit.isPending || !jd.trim() || !companyUrl.trim()}>
+              <Button
+                type="submit"
+                disabled={createKit.isPending || !jd.trim() || !companyUrl.trim()}
+              >
                 {createKit.isPending ? 'Starting research…' : 'Generate kit'}
               </Button>
             </div>

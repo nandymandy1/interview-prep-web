@@ -12,14 +12,14 @@ const Progress: FC<ProgressProps> = ({ value, className }) => {
   return (
     <div
       data-slot="progress"
-      className={cn('h-2 w-full overflow-hidden rounded-full bg-secondary', className)}
+      className={cn('bg-secondary h-2 w-full overflow-hidden rounded-full', className)}
       role="progressbar"
       aria-valuemin={0}
       aria-valuemax={100}
       aria-valuenow={normalizedValue}
     >
       <div
-        className="h-full bg-primary transition-[width]"
+        className="bg-primary h-full transition-[width]"
         style={{ width: `${normalizedValue}%` }}
       />
     </div>

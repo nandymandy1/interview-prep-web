@@ -25,15 +25,30 @@ const PracticeView: FC = () => {
   const recordPractice = useRecordPractice(kitId, current?.id ?? '');
 
   if (kit.isPending) {
-    return <PageContainer><LoadingState rows={4} /></PageContainer>;
+    return (
+      <PageContainer>
+        <LoadingState rows={4} />
+      </PageContainer>
+    );
   }
 
   if (kit.isError) {
-    return <PageContainer><ErrorState message={getErrorMessage(kit.error)} onRetry={() => kit.refetch()} /></PageContainer>;
+    return (
+      <PageContainer>
+        <ErrorState message={getErrorMessage(kit.error)} onRetry={() => kit.refetch()} />
+      </PageContainer>
+    );
   }
 
   if (!kit.data.kit || flashcards.length === 0) {
-    return <PageContainer><ErrorState title="No flashcards yet" message="This kit does not currently contain practice flashcards." /></PageContainer>;
+    return (
+      <PageContainer>
+        <ErrorState
+          title="No flashcards yet"
+          message="This kit does not currently contain practice flashcards."
+        />
+      </PageContainer>
+    );
   }
 
   const handleConfidence = async (confidence: 1 | 2 | 3 | 4 | 5): Promise<void> => {
@@ -61,17 +76,23 @@ const PracticeView: FC = () => {
       <Card className="min-h-80 justify-between">
         <CardContent className="space-y-8">
           <div>
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Question</p>
-            <p className="mt-3 text-xl font-medium leading-relaxed">{current.front}</p>
+            <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+              Question
+            </p>
+            <p className="mt-3 text-xl leading-relaxed font-medium">{current.front}</p>
           </div>
 
           {revealed ? (
-            <div className="rounded-lg bg-muted p-4">
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Answer</p>
+            <div className="bg-muted rounded-lg p-4">
+              <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+                Answer
+              </p>
               <p className="mt-2 text-sm leading-relaxed">{current.back}</p>
             </div>
           ) : (
-            <Button variant="outline" onClick={() => setRevealed(true)}>Reveal answer</Button>
+            <Button variant="outline" onClick={() => setRevealed(true)}>
+              Reveal answer
+            </Button>
           )}
 
           {revealed ? (
