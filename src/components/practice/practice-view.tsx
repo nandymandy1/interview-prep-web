@@ -76,15 +76,15 @@ const PracticeView: FC = () => {
       <Card className="min-h-80 justify-between">
         <CardContent className="space-y-8">
           <div>
-            <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+            <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
               Question
             </p>
             <p className="mt-3 text-xl leading-relaxed font-medium">{current.front}</p>
           </div>
 
           {revealed ? (
-            <div className="bg-muted rounded-lg p-4">
-              <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+            <div className="rounded-lg bg-muted p-4">
+              <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
                 Answer
               </p>
               <p className="mt-2 text-sm leading-relaxed">{current.back}</p>

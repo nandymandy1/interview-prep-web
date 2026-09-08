@@ -30,15 +30,15 @@ const AppShell: FC<AppShellProps> = ({ children }) => {
   };
 
   return (
-    <div className="bg-background min-h-svh">
-      <header className="bg-background/95 sticky top-0 z-20 border-b backdrop-blur">
+    <div className="min-h-svh bg-background">
+      <header className="sticky top-0 z-20 border-b bg-background/95 backdrop-blur">
         <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link href={APP_ROUTES.dashboard} className="font-semibold tracking-tight">
             {APP_NAME}
           </Link>
           <div className="flex items-center gap-3">
             {user ? (
-              <span className="text-muted-foreground hidden text-sm sm:inline">{user.email}</span>
+              <span className="hidden text-sm text-muted-foreground sm:inline">{user.email}</span>
             ) : null}
             <Button variant="ghost" size="sm" onClick={handleLogout} disabled={logout.isPending}>
               <LogOut className="size-4" aria-hidden="true" />

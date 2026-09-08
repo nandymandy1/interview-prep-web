@@ -70,10 +70,10 @@ const RegisterForm: FC = () => {
             {register.isPending ? 'Creating account…' : 'Create account'}
           </Button>
         </form>
-        <p className="text-muted-foreground mt-5 text-center text-sm">
+        <p className="mt-5 text-center text-sm text-muted-foreground">
           Already registered?{' '}
           <Link
-            className="text-foreground font-medium underline underline-offset-4"
+            className="font-medium text-foreground underline underline-offset-4"
             href={APP_ROUTES.login}
           >
             Sign in

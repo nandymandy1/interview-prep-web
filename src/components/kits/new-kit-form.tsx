@@ -78,7 +78,7 @@ const NewKitForm: FC = () => {
                 value={jd}
                 onChange={(event) => setJd(event.target.value)}
               />
-              <p className="text-muted-foreground text-xs">
+              <p className="text-xs text-muted-foreground">
                 {jd.length.toLocaleString()} characters
               </p>
             </div>

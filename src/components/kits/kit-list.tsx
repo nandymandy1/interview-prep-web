@@ -16,14 +16,14 @@ const KitList: FC<KitListProps> = ({ kits }) => (
       <Link
         key={kit.id}
         href={APP_ROUTES.kit(kit.id)}
-        className="group focus-visible:ring-ring/50 rounded-xl outline-none focus-visible:ring-[3px]"
+        className="group rounded-xl outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
       >
         <Card className="h-full transition-shadow group-hover:shadow-md">
           <CardContent className="space-y-4">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <h2 className="font-semibold">{kit.role || 'Interview preparation'}</h2>
-                <p className="text-muted-foreground mt-1 text-sm">
+                <p className="mt-1 text-sm text-muted-foreground">
                   {kit.company || 'Company research pending'}
                 </p>
               </div>
@@ -31,7 +31,7 @@ const KitList: FC<KitListProps> = ({ kits }) => (
                 {kit.status}
               </Badge>
             </div>
-            <p className="text-muted-foreground text-xs">
+            <p className="text-xs text-muted-foreground">
               Updated {new Date(kit.updatedAt).toLocaleString()}
             </p>
           </CardContent>

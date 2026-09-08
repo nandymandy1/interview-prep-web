@@ -139,7 +139,7 @@ const KitDetailView: FC = () => {
                   <Badge variant="outline">Difficulty {question.difficulty}</Badge>
                 </div>
                 <p className="font-medium">{question.prompt}</p>
-                <p className="text-muted-foreground text-sm">{question.answer_outline}</p>
+                <p className="text-sm text-muted-foreground">{question.answer_outline}</p>
               </CardContent>
             </Card>
           ))}
@@ -152,11 +152,11 @@ const KitDetailView: FC = () => {
           {data.schedule.days.map((day) => (
             <Card key={day.day} className="gap-3 py-4">
               <CardContent>
-                <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+                <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
                   Day {day.day}
                 </p>
                 <p className="mt-1 font-medium">{day.focus}</p>
-                <p className="text-muted-foreground mt-2 text-sm">
+                <p className="mt-2 text-sm text-muted-foreground">
                   {day.minutes} minutes · {day.question_ids.length} questions
                 </p>
               </CardContent>
