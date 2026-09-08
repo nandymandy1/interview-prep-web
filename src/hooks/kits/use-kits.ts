@@ -10,10 +10,15 @@ import type {
   UpdateQuestionInput,
 } from '@/types/kits/kit.type';
 
-export const useKits = () =>
+export type KitsQueryParams = {
+  page: number;
+  limit: number;
+};
+
+export const useKits = (params: KitsQueryParams) =>
   useQuery({
-    queryKey: QUERY_KEYS.kits.all,
-    queryFn: () => serviceContainer.kitService().list(),
+    queryKey: QUERY_KEYS.kits.list(params),
+    queryFn: () => serviceContainer.kitService().list(params),
   });
 
 export const useKit = (kitId: string) =>

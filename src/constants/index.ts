@@ -41,6 +41,7 @@ export const QUERY_KEYS = {
   },
   kits: {
     all: ['kits'] as const,
+    list: (params: { page: number; limit: number }) => ['kits', params] as const,
     detail: (kitId: string) => ['kits', kitId] as const,
     status: (kitId: string) => ['kits', kitId, 'status'] as const,
   },

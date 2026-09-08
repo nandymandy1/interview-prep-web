@@ -44,7 +44,11 @@ Browser requests are intentionally same-origin on port 3000 in local development
 
 ## Backend capability status
 
-The backend currently registers only `/health` and `/api/auth`. Kit endpoints (`GET /api/kits`, kit detail/status/regenerate/question/practice routes) do not exist yet and answer `404 Route ... not found`; the dashboard names this state explicitly instead of showing a generic failure. Kit persistence lands in its real phase — no fabricated kit responses are returned.
+The backend registers `/health`, `/api/auth`, and session-authenticated, owner-scoped `/api/kits` routes: list, create, detail, status, and practice recording. New kits persist with `queued` status and empty generated content until the generation pipeline lands — no fabricated kit responses are returned. Regenerate and question edit/reorder/delete endpoints stay unregistered until their domain behavior exists.
+
+## Kit list pagination
+
+`GET /api/kits?page=<n>&limit=<m>` returns `{ items, pagination }` with `page`, `limit`, `totalItems`, `totalPages`, `hasNextPage`, `hasPrevPage`, `nextPage`, and `prevPage`. Defaults are page 1 and limit 20; limit caps at 100. The dashboard reads page/limit from the URL (`/dashboard?page=2&limit=20`), caches each page under its own React Query key, and renders the reusable `PaginationLinks` component. mongoose-paginate-v2 is a backend-only implementation detail — each repo owns its copy of the HTTP contract types.
 
 ## Directory ownership
 

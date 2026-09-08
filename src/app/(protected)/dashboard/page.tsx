@@ -1,5 +1,6 @@
-import type { FC } from 'react';
+import { Suspense, type FC } from 'react';
 import type { Metadata } from 'next';
+import LoadingState from '@/components/common/loading-state';
 import DashboardView from '@/components/dashboard/dashboard-view';
 
 export const metadata: Metadata = {
@@ -7,7 +8,11 @@ export const metadata: Metadata = {
 };
 
 const DashboardPage: FC = () => {
-  return <DashboardView />;
+  return (
+    <Suspense fallback={<LoadingState rows={4} />}>
+      <DashboardView />
+    </Suspense>
+  );
 };
 
 export default DashboardPage;

@@ -1,5 +1,6 @@
 import { API_ENDPOINTS } from '@/constants';
 import type { ApiClientService } from '@/services/http/api-client.service';
+import type { PaginatedResult } from '@/types/pagination.type';
 import type {
   CreateKitInput,
   CreateKitResult,
@@ -17,11 +18,18 @@ type KitServiceDependencies = {
   apiClient: ApiClientService;
 };
 
+export type ListKitsParams = {
+  page?: number;
+  limit?: number;
+};
+
 export class KitService {
   constructor(private readonly dependencies: KitServiceDependencies) {}
 
-  list(): Promise<KitSummary[]> {
-    return this.dependencies.apiClient.get<KitSummary[]>(API_ENDPOINTS.kits.root);
+  list(params: ListKitsParams = {}): Promise<PaginatedResult<KitSummary>> {
+    return this.dependencies.apiClient.get<PaginatedResult<KitSummary>>(API_ENDPOINTS.kits.root, {
+      params: { page: params.page, limit: params.limit },
+    });
   }
 
   create(input: CreateKitInput): Promise<CreateKitResult> {
