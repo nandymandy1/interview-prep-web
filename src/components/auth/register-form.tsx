@@ -50,7 +50,7 @@ const RegisterForm: FC = () => {
               id="email"
               type="email"
               value={email}
-              placeholder='Email'
+              placeholder="Email"
               autoComplete="email"
               onChange={(event) => setEmail(event.target.value)}
             />
@@ -63,7 +63,7 @@ const RegisterForm: FC = () => {
               minLength={8}
               type="password"
               value={password}
-              placeholder='Password'
+              placeholder="Password"
               autoComplete="new-password"
               onChange={(event) => setPassword(event.target.value)}
             />
