@@ -12,35 +12,7 @@ import Card from '@/components/ui/card';
 import CardContent from '@/components/ui/card-content';
 import { useKit, useRecordPractice } from '@/hooks/kits/use-kits';
 import { getErrorMessage } from '@/lib/error';
-import type { KitFlashcard } from '@/types/kits/kit.type';
-
-// Weakest-first ordering: unpractised cards first, then lowest confidence,
-// then original flashcard order. No spaced-repetition engine.
-const orderFlashcards = (
-  flashcards: KitFlashcard[],
-  confidenceById: Map<string, number>,
-): KitFlashcard[] =>
-  flashcards
-    .map((card, order) => ({ card, order }))
-    .sort((a, b) => {
-      const confidenceA = confidenceById.get(a.card.id);
-      const confidenceB = confidenceById.get(b.card.id);
-
-      if (confidenceA === undefined && confidenceB !== undefined) {
-        return -1;
-      }
-
-      if (confidenceA !== undefined && confidenceB === undefined) {
-        return 1;
-      }
-
-      if (confidenceA !== undefined && confidenceB !== undefined && confidenceA !== confidenceB) {
-        return confidenceA - confidenceB;
-      }
-
-      return a.order - b.order;
-    })
-    .map((entry) => entry.card);
+import { orderFlashcards } from '@/lib/practice-order';
 
 const PracticeView: FC = () => {
   const params = useParams<{ kitId: string }>();

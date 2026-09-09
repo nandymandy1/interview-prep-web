@@ -27,6 +27,13 @@ export type ListKitsParams = {
   limit?: number;
 };
 
+export type IdempotencyOptions = {
+  idempotencyKey?: string;
+};
+
+const idempotencyHeaders = (options?: IdempotencyOptions) =>
+  options?.idempotencyKey ? { headers: { 'Idempotency-Key': options.idempotencyKey } } : undefined;
+
 export class KitService {
   constructor(private readonly dependencies: KitServiceDependencies) {}
 
@@ -36,10 +43,11 @@ export class KitService {
     });
   }
 
-  create(input: CreateKitInput): Promise<CreateKitResult> {
+  create(input: CreateKitInput, options?: IdempotencyOptions): Promise<CreateKitResult> {
     return this.dependencies.apiClient.post<CreateKitResult, CreateKitInput>(
       API_ENDPOINTS.kits.root,
       input,
+      idempotencyHeaders(options),
     );
   }
 
@@ -51,10 +59,15 @@ export class KitService {
     return this.dependencies.apiClient.get<KitStatusResult>(API_ENDPOINTS.kits.status(kitId));
   }
 
-  regenerate(kitId: string, input: RegenerateSectionInput): Promise<InterviewKit> {
+  regenerate(
+    kitId: string,
+    input: RegenerateSectionInput,
+    options?: IdempotencyOptions,
+  ): Promise<InterviewKit> {
     return this.dependencies.apiClient.post<InterviewKit, RegenerateSectionInput>(
       API_ENDPOINTS.kits.regenerate(kitId),
       input,
+      idempotencyHeaders(options),
     );
   }
 
@@ -82,17 +95,27 @@ export class KitService {
     );
   }
 
-  addQuestion(kitId: string, input: AddQuestionInput): Promise<InterviewKit> {
+  addQuestion(
+    kitId: string,
+    input: AddQuestionInput,
+    options?: IdempotencyOptions,
+  ): Promise<InterviewKit> {
     return this.dependencies.apiClient.post<InterviewKit, AddQuestionInput>(
       API_ENDPOINTS.kits.questions(kitId),
       input,
+      idempotencyHeaders(options),
     );
   }
 
-  addFlashcard(kitId: string, input: AddFlashcardInput): Promise<InterviewKit> {
+  addFlashcard(
+    kitId: string,
+    input: AddFlashcardInput,
+    options?: IdempotencyOptions,
+  ): Promise<InterviewKit> {
     return this.dependencies.apiClient.post<InterviewKit, AddFlashcardInput>(
       API_ENDPOINTS.kits.flashcards(kitId),
       input,
+      idempotencyHeaders(options),
     );
   }
 
