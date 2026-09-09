@@ -1,10 +1,8 @@
 import type { EffectCallback, ReactElement, ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { ApiClientError } from '@/services/http/api-client.service';
 import type { CurrentUserResult } from '@/types/auth/auth.type';
 
-const { authState, replace, useCurrentUserMock } = vi.hoisted(() => ({
-  authState: { status: 'idle' },
+const { replace, useCurrentUserMock } = vi.hoisted(() => ({
   replace: vi.fn(),
   useCurrentUserMock: vi.fn(),
 }));
@@ -28,10 +26,6 @@ vi.mock('next/navigation', async (importOriginal) => {
 
 vi.mock('@/hooks/auth/use-auth', () => ({
   useCurrentUser: useCurrentUserMock,
-}));
-
-vi.mock('@/stores/auth/auth.store', () => ({
-  useAuthStore: (selector: (state: { status: string }) => unknown) => selector(authState),
 }));
 
 const { createElement } = await import('react');
@@ -65,9 +59,9 @@ const authenticatedQuery = () => ({
   refetch: vi.fn(),
 });
 
-const unauthorizedQuery = () => ({
+const missingUserQuery = () => ({
   data: undefined,
-  error: new ApiClientError('Authentication required', 401),
+  error: new Error('Session lookup failed'),
   isPending: false,
   isError: true,
   refetch: vi.fn(),
@@ -79,7 +73,6 @@ const rendered = (element: ReactNode): string =>
 beforeEach(() => {
   replace.mockReset();
   useCurrentUserMock.mockReset();
-  authState.status = 'idle';
 });
 
 describe('root page', () => {
@@ -97,9 +90,8 @@ describe('root page', () => {
 });
 
 describe('ProtectedRoute', () => {
-  it('renders nothing for an unauthenticated 401 session', () => {
-    useCurrentUserMock.mockReturnValue(unauthorizedQuery());
-    authState.status = 'unauthenticated';
+  it('redirects when the session lookup returns no user', () => {
+    useCurrentUserMock.mockReturnValue(missingUserQuery());
 
     expect(rendered(createElement(ProtectedRoute, null, 'secret'))).toBe('<div></div>');
     expect(replace).toHaveBeenCalledWith('/login');
@@ -107,25 +99,22 @@ describe('ProtectedRoute', () => {
 
   it('renders children for an authenticated session', () => {
     useCurrentUserMock.mockReturnValue(authenticatedQuery());
-    authState.status = 'authenticated';
 
     expect(rendered(createElement(ProtectedRoute, null, 'secret'))).toContain('secret');
+    expect(replace).not.toHaveBeenCalled();
+  });
+
+  it('shows loading while the session is unresolved', () => {
+    useCurrentUserMock.mockReturnValue(pendingQuery());
+
+    expect(rendered(createElement(ProtectedRoute, null, 'secret'))).not.toContain('secret');
     expect(replace).not.toHaveBeenCalled();
   });
 });
 
 describe('GuestRoute', () => {
-  it('renders children for an unauthenticated session', () => {
-    useCurrentUserMock.mockReturnValue(unauthorizedQuery());
-    authState.status = 'unauthenticated';
-
-    expect(rendered(createElement(GuestRoute, null, 'auth form'))).toContain('auth form');
-    expect(replace).not.toHaveBeenCalled();
-  });
-
-  it('trusts a session 401 over stale authenticated client state', () => {
-    useCurrentUserMock.mockReturnValue(unauthorizedQuery());
-    authState.status = 'authenticated';
+  it('renders children when the session lookup returns no user', () => {
+    useCurrentUserMock.mockReturnValue(missingUserQuery());
 
     expect(rendered(createElement(GuestRoute, null, 'auth form'))).toContain('auth form');
     expect(replace).not.toHaveBeenCalled();
@@ -133,7 +122,6 @@ describe('GuestRoute', () => {
 
   it('renders nothing for an authenticated session (effect replaces with /dashboard)', () => {
     useCurrentUserMock.mockReturnValue(authenticatedQuery());
-    authState.status = 'authenticated';
 
     expect(rendered(createElement(GuestRoute, null, 'auth form'))).toBe('<div></div>');
     expect(replace).toHaveBeenCalledWith('/dashboard');
@@ -141,7 +129,6 @@ describe('GuestRoute', () => {
 
   it('shows loading while the session is unresolved', () => {
     useCurrentUserMock.mockReturnValue(pendingQuery());
-    authState.status = 'idle';
 
     expect(rendered(createElement(GuestRoute, null, 'auth form'))).not.toContain('auth form');
   });

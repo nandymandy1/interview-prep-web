@@ -6,7 +6,7 @@ Next.js 16.3 + TypeScript frontend for the AI Interview Prep Kit
 ## Submission
 
 Live application (this repo, deployed):
-https://idacs-hpw9wbb0i-nandymandy1s-projects.vercel.app/
+https://interview-prep-web-delta.vercel.app
 
 Backend API:
 https://nandy1.i-dacs.com
@@ -108,7 +108,7 @@ https://github.com/nandymandy1/interview-prep-api
 ## Submission Links
 
 Application:
-https://idacs-hpw9wbb0i-nandymandy1s-projects.vercel.app/
+https://interview-prep-web-delta.vercel.app
 
 Backend API:
 https://nandy1.i-dacs.com
