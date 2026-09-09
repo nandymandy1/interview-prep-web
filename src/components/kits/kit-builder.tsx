@@ -7,6 +7,7 @@ import {
   ArrowUp,
   Building2,
   CalendarDays,
+  CheckCircle2,
   Clock3,
   ExternalLink,
   Layers3,
@@ -66,6 +67,33 @@ const hostnameOf = (url: string): string => {
 
 const requirementTextById = (kit: InterviewKit): Map<string, string> =>
   new Map(kit.role.requirements.map((requirement) => [requirement.id, requirement.text]));
+
+type SourceLinkChipsProps = {
+  sources: string[];
+};
+
+const SourceLinkChips: FC<SourceLinkChipsProps> = ({ sources }) => {
+  if (sources.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="flex flex-wrap items-center gap-1.5">
+      {sources.slice(0, 4).map((source) => (
+        <a
+          key={source}
+          href={source}
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs text-muted-foreground transition-colors outline-none hover:border-muted-foreground/40 hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50"
+        >
+          <ExternalLink className="size-3" aria-hidden="true" />
+          {hostnameOf(source)}
+        </a>
+      ))}
+    </div>
+  );
+};
 
 type QuestionEditorProps = {
   kitId: string;
@@ -133,11 +161,11 @@ const QuestionEditor: FC<QuestionEditorProps> = ({ kitId, question, questionIds 
 
   return (
     <Card className="gap-0 py-4">
-      <CardContent className="space-y-3">
-        <div className="flex flex-wrap items-center gap-2">
+      <CardContent className="space-y-4">
+        <div className="flex flex-wrap items-center gap-2 border-b pb-3">
           <Badge variant="secondary">{categoryLabel(question.category)}</Badge>
           <Badge variant="outline">Difficulty {question.difficulty}</Badge>
-          <span className="text-xs text-muted-foreground">{question.id}</span>
+          <span className="ml-auto text-xs text-muted-foreground tabular-nums">{question.id}</span>
         </div>
         <div className="space-y-1.5">
           <Label htmlFor={`prompt-${question.id}`}>Prompt</Label>
@@ -146,6 +174,7 @@ const QuestionEditor: FC<QuestionEditorProps> = ({ kitId, question, questionIds 
             value={prompt}
             onChange={(event) => setPrompt(event.target.value)}
             rows={3}
+            className="min-h-20"
           />
         </div>
         <div className="space-y-1.5">
@@ -155,6 +184,7 @@ const QuestionEditor: FC<QuestionEditorProps> = ({ kitId, question, questionIds 
             value={outline}
             onChange={(event) => setOutline(event.target.value)}
             rows={3}
+            className="min-h-20"
           />
         </div>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -162,7 +192,7 @@ const QuestionEditor: FC<QuestionEditorProps> = ({ kitId, question, questionIds 
             <Label htmlFor={`category-${question.id}`}>Category</Label>
             <select
               id={`category-${question.id}`}
-              className="h-9 w-full rounded-md border bg-background px-3 text-sm"
+              className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
               value={category}
               onChange={(event) => setCategory(event.target.value as QuestionCategory)}
             >
@@ -177,7 +207,7 @@ const QuestionEditor: FC<QuestionEditorProps> = ({ kitId, question, questionIds 
             <Label htmlFor={`difficulty-${question.id}`}>Difficulty</Label>
             <select
               id={`difficulty-${question.id}`}
-              className="h-9 w-full rounded-md border bg-background px-3 text-sm"
+              className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
               value={difficulty}
               onChange={(event) => setDifficulty(Number(event.target.value) as QuestionDifficulty)}
             >
@@ -189,7 +219,7 @@ const QuestionEditor: FC<QuestionEditorProps> = ({ kitId, question, questionIds 
             </select>
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 border-t pt-3">
           <Button type="button" size="sm" disabled={!dirty || busy} onClick={() => void save()}>
             {updateQuestion.isPending ? (
               <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />
@@ -242,6 +272,52 @@ const QuestionEditor: FC<QuestionEditorProps> = ({ kitId, question, questionIds 
   );
 };
 
+type ScheduleDayCardProps = {
+  day: InterviewKit['schedule']['days'][number];
+  promptById: Map<string, string>;
+};
+
+const ScheduleDayCard: FC<ScheduleDayCardProps> = ({ day, promptById }) => (
+  <Card className="gap-0 py-4">
+    <CardContent className="space-y-3">
+      <div>
+        <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+          Day {day.day}
+        </p>
+        <p className="mt-1 text-sm font-medium">{day.focus}</p>
+        <p className="mt-1.5 flex items-center gap-1.5 text-xs text-muted-foreground">
+          <Clock3 className="size-3.5" aria-hidden="true" />
+          {day.minutes} min · {day.question_ids.length} question
+          {day.question_ids.length === 1 ? '' : 's'}
+        </p>
+      </div>
+      {day.question_ids.length > 0 ? (
+        <ul className="space-y-1.5 border-t pt-3">
+          {day.question_ids.map((id) => (
+            <li key={id} className="flex items-start gap-2 text-xs">
+              <CheckCircle2
+                className="mt-0.5 size-3.5 shrink-0 text-muted-foreground"
+                aria-hidden="true"
+              />
+              <span className="min-w-0">
+                <span className="font-medium tabular-nums">{id}</span>
+                <span className="text-muted-foreground"> · </span>
+                <span className="line-clamp-2 text-muted-foreground">
+                  {promptById.get(id) ?? 'Question'}
+                </span>
+              </span>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="border-t pt-3 text-xs text-muted-foreground">
+          Review available role and company context.
+        </p>
+      )}
+    </CardContent>
+  </Card>
+);
+
 type FlashcardEditorProps = {
   kitId: string;
   flashcard: KitFlashcard;
@@ -282,10 +358,12 @@ const FlashcardEditor: FC<FlashcardEditorProps> = ({
   };
 
   return (
-    <Card className="gap-0 py-4">
+    <Card className="gap-0 py-4 transition-colors hover:border-muted-foreground/30">
       <CardContent className="space-y-3">
-        <div className="flex items-start justify-between gap-2">
-          <span className="text-xs text-muted-foreground">{flashcard.id}</span>
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-xs font-medium text-muted-foreground tabular-nums">
+            {flashcard.id}
+          </span>
           <div className="flex items-center gap-1">
             <Button
               type="button"
@@ -360,11 +438,18 @@ const FlashcardEditor: FC<FlashcardEditorProps> = ({
         ) : (
           <div className="space-y-2">
             <p className="text-sm leading-relaxed font-medium">{flashcard.front}</p>
-            <p className="text-sm leading-relaxed text-muted-foreground">{flashcard.back}</p>
+            <p className="border-t pt-2 text-sm leading-relaxed text-muted-foreground">
+              {flashcard.back}
+            </p>
             {flashcard.requirement_ids.length > 0 ? (
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex flex-wrap gap-1.5 pt-1">
                 {flashcard.requirement_ids.map((id) => (
-                  <Badge key={id} variant="outline" title={requirementTextByIdProp.get(id) ?? id}>
+                  <Badge
+                    key={id}
+                    variant="secondary"
+                    className="px-2 py-0 text-[11px] font-normal"
+                    title={requirementTextByIdProp.get(id) ?? id}
+                  >
                     {id}
                   </Badge>
                 ))}
@@ -522,19 +607,20 @@ const KitBuilder: FC<KitBuilderProps> = ({ kitId, kit }) => {
               value={summary}
               onChange={(event) => setSummary(event.target.value)}
               rows={4}
+              className="min-h-24"
             />
           </div>
-          <div className="rounded-lg bg-muted p-4">
+          <div className="space-y-1.5">
             <Label htmlFor="brief-what">What they do</Label>
             <Textarea
               id="brief-what"
-              className="mt-1.5"
               value={whatTheyDo}
               onChange={(event) => setWhatTheyDo(event.target.value)}
               rows={3}
+              className="min-h-20"
             />
           </div>
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-3 border-t pt-4">
             <Button
               type="button"
               size="sm"
@@ -548,22 +634,7 @@ const KitBuilder: FC<KitBuilderProps> = ({ kitId, kit }) => {
               )}
               {updateBrief.isPending ? 'Saving...' : 'Save brief'}
             </Button>
-            {kit.company_brief.sources.length > 0 ? (
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
-                {kit.company_brief.sources.slice(0, 4).map((source) => (
-                  <a
-                    key={source}
-                    href={source}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-1 text-muted-foreground transition-colors outline-none hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50"
-                  >
-                    <ExternalLink className="size-3" aria-hidden="true" />
-                    {hostnameOf(source)}
-                  </a>
-                ))}
-              </div>
-            ) : null}
+            <SourceLinkChips sources={kit.company_brief.sources} />
           </div>
         </div>
       </SectionCard>
@@ -579,11 +650,13 @@ const KitBuilder: FC<KitBuilderProps> = ({ kitId, kit }) => {
             const group = kit.questions.filter((question) => question.category === category);
 
             return (
-              <div key={category} className="space-y-3">
+              <div key={category} className="space-y-3 rounded-xl border p-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                  <h3 className="text-sm font-semibold">
-                    {categoryLabel(category)}{' '}
-                    <span className="font-normal text-muted-foreground">({group.length})</span>
+                  <h3 className="flex items-center gap-2 text-sm font-semibold">
+                    {categoryLabel(category)}
+                    <Badge variant="secondary" className="tabular-nums">
+                      {group.length}
+                    </Badge>
                   </h3>
                   <Button
                     type="button"
@@ -829,19 +902,11 @@ const KitBuilder: FC<KitBuilderProps> = ({ kitId, kit }) => {
       >
         <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
           {kit.schedule.days.map((day) => (
-            <Card key={day.day} className="gap-0 py-4">
-              <CardContent>
-                <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-                  Day {day.day}
-                </p>
-                <p className="mt-1 text-sm font-medium">{day.focus}</p>
-                <p className="mt-2 flex items-center gap-1.5 text-sm text-muted-foreground">
-                  <Clock3 className="size-3.5" aria-hidden="true" />
-                  {day.minutes} min · {day.question_ids.length} question
-                  {day.question_ids.length === 1 ? '' : 's'}
-                </p>
-              </CardContent>
-            </Card>
+            <ScheduleDayCard
+              key={day.day}
+              day={day}
+              promptById={new Map(kit.questions.map((question) => [question.id, question.prompt]))}
+            />
           ))}
         </div>
       </SectionCard>

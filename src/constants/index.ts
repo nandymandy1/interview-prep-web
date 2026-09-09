@@ -25,6 +25,7 @@ export const API_ENDPOINTS = {
     root: '/kits',
     byId: (kitId: string): string => `/kits/${kitId}`,
     status: (kitId: string): string => `/kits/${kitId}/status`,
+    retry: (kitId: string): string => `/kits/${kitId}/retry`,
     regenerate: (kitId: string): string => `/kits/${kitId}/regenerate`,
     question: (kitId: string, questionId: string): string =>
       `/kits/${kitId}/questions/${questionId}`,

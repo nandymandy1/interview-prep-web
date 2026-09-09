@@ -7,9 +7,15 @@ import {
   BriefcaseBusiness,
   CalendarDays,
   CircleCheckBig,
+  Code2,
   Dumbbell,
+  Globe,
+  HeartHandshake,
+  Layers3,
   ListChecks,
+  MessageSquareText,
   TriangleAlert,
+  type LucideIcon,
 } from 'lucide-react';
 import Badge from '@/components/ui/badge';
 import Button from '@/components/ui/button';
@@ -24,6 +30,7 @@ import SectionCard from '@/components/ui/section-card';
 import { APP_ROUTES } from '@/constants';
 import { useKit, useKitStatus } from '@/hooks/kits/use-kits';
 import { getErrorMessage } from '@/lib/error';
+import type { KitRequirement, RequirementKind } from '@/types/kits/kit.type';
 
 const SECTIONS = [
   { id: 'overview', label: 'Overview' },
@@ -32,6 +39,41 @@ const SECTIONS = [
   { id: 'flashcards', label: 'Flashcards' },
   { id: 'schedule', label: 'Schedule' },
 ] as const;
+
+const KIND_ICON: Record<RequirementKind, LucideIcon> = {
+  technical: Code2,
+  behavioural: HeartHandshake,
+  domain: Globe,
+};
+
+const kindLabel = (kind: RequirementKind): string =>
+  kind === 'technical' ? 'Technical' : kind === 'behavioural' ? 'Behavioural' : 'Domain';
+
+type RequirementCardProps = {
+  requirement: KitRequirement;
+};
+
+const RequirementCard: FC<RequirementCardProps> = ({ requirement }) => {
+  const KindIcon = KIND_ICON[requirement.kind];
+
+  return (
+    <li className="flex flex-col gap-3 rounded-xl border bg-card p-4 transition-colors hover:border-muted-foreground/30">
+      <div className="flex items-start gap-2.5">
+        <span className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-lg bg-muted">
+          <KindIcon className="size-3.5 text-muted-foreground" aria-hidden="true" />
+        </span>
+        <p className="text-sm leading-relaxed font-medium">{requirement.text}</p>
+      </div>
+      <div className="flex flex-wrap items-center gap-1.5 pl-[38px]">
+        <Badge variant={requirement.priority === 'must' ? 'default' : 'outline'}>
+          {requirement.priority === 'must' ? 'Must-have' : 'Nice-to-have'}
+        </Badge>
+        <Badge variant="outline">{kindLabel(requirement.kind)}</Badge>
+        <span className="ml-auto text-xs text-muted-foreground tabular-nums">{requirement.id}</span>
+      </div>
+    </li>
+  );
+};
 
 const KitDetailView: FC = () => {
   const params = useParams<{ kitId: string }>();
@@ -73,7 +115,11 @@ const KitDetailView: FC = () => {
           title="Preparing your interview kit"
           description="Research and generation can take a little while. Progress below reflects backend stages."
         />
-        {status.data ? <GenerationProgress status={status.data} /> : <LoadingState rows={4} />}
+        {status.data ? (
+          <GenerationProgress status={status.data} kitId={kitId} />
+        ) : (
+          <LoadingState rows={4} />
+        )}
         {status.isError ? (
           <div className="mt-6">
             <ErrorState message={getErrorMessage(status.error)} onRetry={() => status.refetch()} />
@@ -105,7 +151,7 @@ const KitDetailView: FC = () => {
         }
       />
 
-      <div className="mb-8 flex flex-wrap items-center gap-2">
+      <div className="mb-6 flex flex-wrap items-center gap-2 rounded-xl border bg-card px-4 py-3">
         <KitStatusBadge status={kit.data.status} />
         <Badge variant="outline">
           <CalendarDays className="size-3" aria-hidden="true" />
@@ -117,11 +163,32 @@ const KitDetailView: FC = () => {
           {data.role.requirements.length === 1 ? '' : 's'}
         </Badge>
         <Badge variant="outline">
+          <MessageSquareText className="size-3" aria-hidden="true" />
           {data.questions.length} question{data.questions.length === 1 ? '' : 's'}
+        </Badge>
+        <Badge variant="outline">
+          <Layers3 className="size-3" aria-hidden="true" />
+          {data.flashcards.length} flashcard{data.flashcards.length === 1 ? '' : 's'}
+        </Badge>
+        <Badge variant={covered ? 'default' : 'destructive'}>
+          {covered ? (
+            <>
+              <CircleCheckBig className="size-3" aria-hidden="true" />
+              Covered in {data.coverage.passes} pass{data.coverage.passes === 1 ? '' : 'es'}
+            </>
+          ) : (
+            <>
+              <TriangleAlert className="size-3" aria-hidden="true" />
+              {uncovered} uncovered
+            </>
+          )}
         </Badge>
       </div>
 
-      <nav aria-label="Kit sections" className="mb-8 flex gap-2 overflow-x-auto pb-1">
+      <nav
+        aria-label="Kit sections"
+        className="sticky top-0 z-10 -mx-4 mb-8 flex gap-2 overflow-x-auto bg-background/95 px-4 py-2 backdrop-blur sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8"
+      >
         {SECTIONS.map((section) => (
           <a
             key={section.id}
@@ -133,16 +200,23 @@ const KitDetailView: FC = () => {
         ))}
       </nav>
 
-      <div id="overview" className="grid scroll-mt-20 gap-5 lg:grid-cols-2">
+      <div id="overview" className="grid scroll-mt-24 gap-5 lg:grid-cols-2">
         <SectionCard icon={BriefcaseBusiness} title="Role" description={data.role.seniority}>
-          <dl className="space-y-2 text-sm">
-            <div className="flex justify-between gap-4">
+          <dl className="space-y-2.5 text-sm">
+            <div className="flex items-center justify-between gap-4">
               <dt className="text-muted-foreground">Title</dt>
-              <dd className="font-medium">{data.role.title}</dd>
+              <dd className="text-right font-medium">{data.role.title}</dd>
             </div>
-            <div className="flex justify-between gap-4">
+            <div className="flex items-center justify-between gap-4 border-t pt-2.5">
               <dt className="text-muted-foreground">Location</dt>
-              <dd className="font-medium">{data.source.location}</dd>
+              <dd className="text-right font-medium">{data.source.location}</dd>
+            </div>
+            <div className="flex items-center justify-between gap-4 border-t pt-2.5">
+              <dt className="text-muted-foreground">Preparation</dt>
+              <dd className="text-right font-medium">
+                {data.schedule.days_available} day{data.schedule.days_available === 1 ? '' : 's'} ·{' '}
+                {data.questions.length} question{data.questions.length === 1 ? '' : 's'}
+              </dd>
             </div>
           </dl>
         </SectionCard>
@@ -184,20 +258,7 @@ const KitDetailView: FC = () => {
           ) : (
             <ul className="grid gap-3 md:grid-cols-2">
               {data.role.requirements.map((requirement) => (
-                <li
-                  key={requirement.id}
-                  className="flex items-start justify-between gap-3 rounded-lg border p-3.5"
-                >
-                  <p className="text-sm">{requirement.text}</p>
-                  <span className="flex shrink-0 flex-col items-end gap-1.5">
-                    <Badge variant={requirement.priority === 'must' ? 'default' : 'outline'}>
-                      {requirement.priority === 'must' ? 'Must-have' : 'Nice-to-have'}
-                    </Badge>
-                    <Badge variant="outline" className="capitalize">
-                      {requirement.kind}
-                    </Badge>
-                  </span>
-                </li>
+                <RequirementCard key={requirement.id} requirement={requirement} />
               ))}
             </ul>
           )}

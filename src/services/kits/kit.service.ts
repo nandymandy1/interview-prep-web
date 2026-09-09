@@ -59,6 +59,14 @@ export class KitService {
     return this.dependencies.apiClient.get<KitStatusResult>(API_ENDPOINTS.kits.status(kitId));
   }
 
+  retryGeneration(kitId: string, options?: IdempotencyOptions): Promise<CreateKitResult> {
+    return this.dependencies.apiClient.post<CreateKitResult>(
+      API_ENDPOINTS.kits.retry(kitId),
+      undefined,
+      idempotencyHeaders(options),
+    );
+  }
+
   regenerate(
     kitId: string,
     input: RegenerateSectionInput,

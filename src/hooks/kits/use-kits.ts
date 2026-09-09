@@ -96,6 +96,26 @@ export const useCreateKit = () => {
   });
 };
 
+// User-controlled retry of a failed kit: same kitId, saved inputs reused by
+// the backend. Invalidating detail + status drops the stale failed snapshot
+// so status polling resumes on the queued generation.
+export const useRetryKitGeneration = (kitId: string) => {
+  const queryClient = useQueryClient();
+  const actionKey = useActionKey();
+
+  return useMutation({
+    mutationFn: () =>
+      serviceContainer.kitService().retryGeneration(kitId, { idempotencyKey: actionKey.take() }),
+    onSettled: () => {
+      actionKey.rotate();
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.kits.detail(kitId) });
+      await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.kits.status(kitId) });
+    },
+  });
+};
+
 export const useRegenerateKitSection = (kitId: string) => {
   const queryClient = useQueryClient();
   const actionKey = useActionKey();

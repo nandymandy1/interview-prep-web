@@ -44,7 +44,7 @@ Browser requests are intentionally same-origin on port 3000 in local development
 
 ## Backend capability status
 
-The backend registers `/health`, `/api/auth`, and session-authenticated, owner-scoped `/api/kits` routes: list, create, detail, status, and practice recording. New kits persist with `queued` status and empty generated content until the generation pipeline lands — no fabricated kit responses are returned. Regenerate and question edit/reorder/delete endpoints stay unregistered until their domain behavior exists.
+The backend registers `/health`, `/api/auth`, and session-authenticated, owner-scoped `/api/kits` routes: list, create, detail, status, practice recording, plus regenerate and question/flashcard/brief builder endpoints. New kits persist with `queued` status and empty generated content until the generation pipeline lands — no fabricated kit responses are returned.
 
 ## Kit list pagination
 
