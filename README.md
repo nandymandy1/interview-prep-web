@@ -1,6 +1,24 @@
-# Interview Prep Web
+# AI Interview Prep Kit — Web
 
-Next.js 16.3 + TypeScript frontend starter for the interview-preparation assessment.
+Next.js 16.3 + TypeScript frontend for the AI Interview Prep Kit
+(Trao Full-Stack Engineering Assessment).
+
+## Submission
+
+Live application (this repo, deployed):
+https://idacs-hpw9wbb0i-nandymandy1s-projects.vercel.app/
+
+Backend API:
+https://nandy1.i-dacs.com
+
+Frontend source (this repository):
+https://github.com/nandymandy1/interview-prep-web
+
+Backend architecture + mandatory evaluator:
+https://github.com/nandymandy1/interview-prep-api
+
+Walkthrough video:
+[To be added before submission]
 
 ## Stack
 
@@ -16,12 +34,64 @@ Next.js 16.3 + TypeScript frontend starter for the interview-preparation assessm
 ## Local setup
 
 ```bash
+git clone https://github.com/nandymandy1/interview-prep-web.git
+cd interview-prep-web
+
 cp .env.example .env.local
-npm install
+npm ci
 npm run dev
 ```
 
-The frontend runs on `http://localhost:3000` by default. The Express backend is expected on `http://localhost:4000` unless `API_PROXY_TARGET` is changed.
+Open:
+
+```text
+http://localhost:3000
+```
+
+The Express backend is expected on `http://localhost:4000` unless
+`API_PROXY_TARGET` is changed.
+
+## Environment
+
+```text
+API_PROXY_TARGET=http://localhost:4000
+NEXT_PUBLIC_API_BASE_URL=/api
+NEXT_PUBLIC_APP_NAME=Interview Prep AI
+```
+
+Production `API_PROXY_TARGET`:
+
+```text
+https://nandy1.i-dacs.com
+```
+
+No backend secrets belong here: no OpenAI/Brave keys, no Mongo/Redis URIs.
+
+## API proxy architecture
+
+Browser requests are intentionally same-origin: the browser only ever calls
+`/api/...` on the frontend origin, and Next.js rewrites proxy them to
+`API_PROXY_TARGET` (the Express backend). Session cookies therefore stay
+first-party — do not point browser code at the backend origin. `rewrites()`
+resolves `API_PROXY_TARGET` at build time: if it is missing or invalid, Next
+logs `[web] API_PROXY_TARGET is missing or invalid` and `/api` is not proxied.
+
+## Production deployment
+
+- Vercel Container via `Dockerfile.vercel` (multi-stage, Node 22, non-root,
+  `PORT=3000`, production runs `node server.js` from the standalone output)
+- `API_PROXY_TARGET` must be set for Production (and Preview, if previews
+  should reach a backend) and available at BUILD time — changing it requires a
+  redeploy because rewrites are baked in
+
+## Main user flow
+
+Register/login → dashboard (paginated kit list) → new kit (JD + company URL +
+days) → live generation progress (research → JD analysis → questions →
+coverage → schedule) → Ready kit (overview, requirements, company brief,
+questions, flashcards, schedule) → builder edits with regeneration that
+preserves manual edits → weakest-first flashcard practice with confidence
+recording → logout. Failed kits offer Retry generation on the same kit.
 
 ## Checks
 
@@ -31,46 +101,23 @@ npm run typecheck
 npm run build
 ```
 
-## HTTP rule
+Backend architecture, generation pipeline, and the mandatory batch evaluator
+live in the backend repository:
+https://github.com/nandymandy1/interview-prep-api
 
-Application code must not use the Fetch API. All network traffic goes through `ApiClientService`, which is backed by Axios. Feature services depend on that client through constructor injection.
+## Submission Links
 
-## Same-origin API proxy
+Application:
+https://idacs-hpw9wbb0i-nandymandy1s-projects.vercel.app/
 
-Browser requests are intentionally same-origin on port 3000 in local development; Next proxies `/api` requests to Express on port 4000. The browser Network panel correctly shows `localhost:3000/api/...` — do not point browser code at the backend origin to change that display.
+Backend API:
+https://nandy1.i-dacs.com
 
-- `API_PROXY_TARGET` (default `http://localhost:4000`) is the server-side proxy destination. If it is missing or invalid, Next starts with a warning and `/api` requests are not proxied.
-- `NEXT_PUBLIC_API_BASE_URL` stays `/api` so session cookies remain same-origin.
+Backend / evaluator repository:
+https://github.com/nandymandy1/interview-prep-api
 
-## Deployment
+Frontend repository:
+https://github.com/nandymandy1/interview-prep-web
 
-Frontend deployment:
-
-- Vercel Container via `Dockerfile.vercel` (multi-stage, Node 22, non-root, `PORT=3000`)
-- Next.js `standalone` output; production container runs `node server.js`
-- `API_PROXY_TARGET` must point to the deployed Express backend origin and be
-  available at BUILD time (rewrites are baked in — never `localhost` in production)
-- No backend secrets in this image: no OpenAI/Brave keys, no Mongo/Redis URIs
-
-## Backend capability status
-
-The backend registers `/health`, `/api/auth`, and session-authenticated, owner-scoped `/api/kits` routes: list, create, detail, status, practice recording, plus regenerate and question/flashcard/brief builder endpoints. New kits persist with `queued` status and empty generated content until the generation pipeline lands — no fabricated kit responses are returned.
-
-## Kit list pagination
-
-`GET /api/kits?page=<n>&limit=<m>` returns `{ items, pagination }` with `page`, `limit`, `totalItems`, `totalPages`, `hasNextPage`, `hasPrevPage`, `nextPage`, and `prevPage`. Defaults are page 1 and limit 20; limit caps at 100. The dashboard reads page/limit from the URL (`/dashboard?page=2&limit=20`), caches each page under its own React Query key, and renders the reusable `PaginationLinks` component. mongoose-paginate-v2 is a backend-only implementation detail — each repo owns its copy of the HTTP contract types.
-
-## Directory ownership
-
-```text
-src/app                 routes and layouts
-src/components/ui       reusable shadcn-style primitives
-src/components/<name>   feature components
-src/hooks/<name>        React Query and feature hooks
-src/providers           app providers + service composition root
-src/services            Axios-backed service layer
-src/stores              Zustand stores
-src/types/<name>        domain/API type declarations
-src/constants           shared constants and endpoint declarations
-src/lib                 pure framework utilities
-```
+Walkthrough video:
+[To be added before submission]
