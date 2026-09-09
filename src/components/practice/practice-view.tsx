@@ -115,7 +115,9 @@ const PracticeView: FC = () => {
 
     try {
       await recordPractice.mutateAsync({ confidence });
-      setPosition((position + 1) % ordered.length);
+      // The deck reranks from refetched detail state; restart at the new
+      // weakest card instead of stepping past it.
+      setPosition(0);
       setRevealed(false);
     } catch (error) {
       toast.error(getErrorMessage(error));

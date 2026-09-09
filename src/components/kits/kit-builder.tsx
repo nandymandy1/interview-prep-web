@@ -286,11 +286,41 @@ const KitBuilder: FC<KitBuilderProps> = ({ kitId, kit }) => {
   const addQuestion = useAddQuestion(kitId);
   const addFlashcard = useAddFlashcard(kitId);
 
-  const [summary, setSummary] = useState(kit.company_brief.summary);
-  const [whatTheyDo, setWhatTheyDo] = useState(kit.company_brief.what_they_do);
+  const [briefDraft, setBriefDraft] = useState({
+    summary: kit.company_brief.summary,
+    whatTheyDo: kit.company_brief.what_they_do,
+    base: kit.company_brief,
+  });
+
+  // Remote brief changes (e.g. after regeneration) flow into the editor, but
+  // an active unsaved local edit is never overwritten. Render-time adjustment
+  // (not an effect): untouched drafts adopt the new remote text.
+  if (briefDraft.base !== kit.company_brief) {
+    const untouched =
+      briefDraft.summary === briefDraft.base.summary &&
+      briefDraft.whatTheyDo === briefDraft.base.what_they_do;
+
+    setBriefDraft(
+      untouched
+        ? {
+            summary: kit.company_brief.summary,
+            whatTheyDo: kit.company_brief.what_they_do,
+            base: kit.company_brief,
+          }
+        : { ...briefDraft, base: kit.company_brief },
+    );
+  }
+
+  const summary = briefDraft.summary;
+  const whatTheyDo = briefDraft.whatTheyDo;
+  const setSummary = (value: string): void =>
+    setBriefDraft((draft) => ({ ...draft, summary: value }));
+  const setWhatTheyDo = (value: string): void =>
+    setBriefDraft((draft) => ({ ...draft, whatTheyDo: value }));
   const [newPrompt, setNewPrompt] = useState('');
   const [newOutline, setNewOutline] = useState('');
   const [newCategory, setNewCategory] = useState<QuestionCategory>('technical');
+  const [newRequirementId, setNewRequirementId] = useState('');
   const [newFront, setNewFront] = useState('');
   const [newBack, setNewBack] = useState('');
 
@@ -313,6 +343,7 @@ const KitBuilder: FC<KitBuilderProps> = ({ kitId, kit }) => {
   const saveBrief = async (): Promise<void> => {
     try {
       await updateBrief.mutateAsync({ summary, what_they_do: whatTheyDo });
+      setBriefDraft({ summary, whatTheyDo, base: kit.company_brief });
       toast.success('Company brief saved');
     } catch (error) {
       toast.error(getErrorMessage(error));
@@ -330,6 +361,7 @@ const KitBuilder: FC<KitBuilderProps> = ({ kitId, kit }) => {
         prompt: newPrompt.trim(),
         answer_outline: newOutline.trim(),
         category: newCategory,
+        ...(newRequirementId ? { requirement_ids: [newRequirementId] } : { requirement_ids: [] }),
       });
       setNewPrompt('');
       setNewOutline('');
@@ -471,6 +503,26 @@ const KitBuilder: FC<KitBuilderProps> = ({ kitId, kit }) => {
                 {CATEGORIES.map((entry) => (
                   <option key={entry} value={entry}>
                     {categoryLabel(entry)}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="new-requirement">Related requirement</Label>
+              <select
+                id="new-requirement"
+                className="h-9 w-full rounded-md border bg-background px-3 text-sm"
+                value={newRequirementId}
+                onChange={(event) => setNewRequirementId(event.target.value)}
+              >
+                <option value="">
+                  {kit.role.requirements.length === 0
+                    ? 'No requirements in this kit'
+                    : 'None (manual question)'}
+                </option>
+                {kit.role.requirements.map((requirement) => (
+                  <option key={requirement.id} value={requirement.id}>
+                    {requirement.id} · {requirement.text.slice(0, 80)}
                   </option>
                 ))}
               </select>
