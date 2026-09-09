@@ -48,6 +48,7 @@ const LoginForm: FC = () => {
               id="email"
               type="email"
               value={email}
+              placeholder='Email'
               autoComplete="email"
               onChange={(event) => setEmail(event.target.value)}
             />
@@ -59,6 +60,7 @@ const LoginForm: FC = () => {
               id="password"
               type="password"
               value={password}
+              placeholder='Password'
               autoComplete="current-password"
               onChange={(event) => setPassword(event.target.value)}
             />

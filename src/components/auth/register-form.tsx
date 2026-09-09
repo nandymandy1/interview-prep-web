@@ -46,23 +46,25 @@ const RegisterForm: FC = () => {
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
+              required
               id="email"
               type="email"
-              autoComplete="email"
-              required
               value={email}
+              placeholder='Email'
+              autoComplete="email"
               onChange={(event) => setEmail(event.target.value)}
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="password">Password</Label>
             <Input
-              id="password"
-              type="password"
-              autoComplete="new-password"
-              minLength={8}
               required
+              id="password"
+              minLength={8}
+              type="password"
               value={password}
+              placeholder='Password'
+              autoComplete="new-password"
               onChange={(event) => setPassword(event.target.value)}
             />
           </div>
