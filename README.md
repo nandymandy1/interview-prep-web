@@ -42,6 +42,16 @@ Browser requests are intentionally same-origin on port 3000 in local development
 - `API_PROXY_TARGET` (default `http://localhost:4000`) is the server-side proxy destination. If it is missing or invalid, Next starts with a warning and `/api` requests are not proxied.
 - `NEXT_PUBLIC_API_BASE_URL` stays `/api` so session cookies remain same-origin.
 
+## Deployment
+
+Frontend deployment:
+
+- Vercel Container via `Dockerfile.vercel` (multi-stage, Node 22, non-root, `PORT=3000`)
+- Next.js `standalone` output; production container runs `node server.js`
+- `API_PROXY_TARGET` must point to the deployed Express backend origin and be
+  available at BUILD time (rewrites are baked in — never `localhost` in production)
+- No backend secrets in this image: no OpenAI/Brave keys, no Mongo/Redis URIs
+
 ## Backend capability status
 
 The backend registers `/health`, `/api/auth`, and session-authenticated, owner-scoped `/api/kits` routes: list, create, detail, status, practice recording, plus regenerate and question/flashcard/brief builder endpoints. New kits persist with `queued` status and empty generated content until the generation pipeline lands — no fabricated kit responses are returned.
