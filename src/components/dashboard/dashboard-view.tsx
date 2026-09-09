@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import type { FC } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, Sparkles } from 'lucide-react';
 import Button from '@/components/ui/button';
 import EmptyState from '@/components/common/empty-state';
 import ErrorState from '@/components/common/error-state';
@@ -32,8 +32,8 @@ const DashboardView: FC = () => {
     <PageContainer>
       <PageHeader
         title="Interview kits"
-        description="Create a focused plan from a job description, company research, and the time you have available."
-        action={
+        description="Build and revisit personalised preparation kits."
+        actions={
           <Button asChild>
             <Link href={APP_ROUTES.newKit}>
               <Plus className="size-4" aria-hidden="true" />
@@ -51,11 +51,15 @@ const DashboardView: FC = () => {
 
       {pagination?.totalItems === 0 ? (
         <EmptyState
+          icon={Sparkles}
           title="No interview kits yet"
-          description="Paste a job description and company URL to create your first preparation kit."
+          description="Create your first kit from a job description and company website."
           action={
             <Button asChild>
-              <Link href={APP_ROUTES.newKit}>Create first kit</Link>
+              <Link href={APP_ROUTES.newKit}>
+                <Plus className="size-4" aria-hidden="true" />
+                Create your first kit
+              </Link>
             </Button>
           }
         />

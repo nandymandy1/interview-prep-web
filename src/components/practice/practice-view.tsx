@@ -3,14 +3,18 @@
 import { useParams } from 'next/navigation';
 import { type FC, useMemo, useState } from 'react';
 import { toast } from 'sonner';
+import { Brain, Dumbbell, Eye, LoaderCircle, Target } from 'lucide-react';
 import ErrorState from '@/components/common/error-state';
 import LoadingState from '@/components/common/loading-state';
 import PageContainer from '@/components/common/page-container';
 import PageHeader from '@/components/common/page-header';
+import Badge from '@/components/ui/badge';
 import Button from '@/components/ui/button';
 import Card from '@/components/ui/card';
 import CardContent from '@/components/ui/card-content';
+import Progress from '@/components/ui/progress';
 import { useKit, useRecordPractice } from '@/hooks/kits/use-kits';
+import { APP_ROUTES } from '@/constants';
 import { getErrorMessage } from '@/lib/error';
 import { orderFlashcards } from '@/lib/practice-order';
 
@@ -79,6 +83,7 @@ const PracticeView: FC = () => {
 
   const covered = flashcards.filter((card) => confidenceById.has(card.id)).length;
   const remaining = flashcards.length - covered;
+  const progress = flashcards.length === 0 ? 0 : (covered / flashcards.length) * 100;
 
   const handleConfidence = async (confidence: 1 | 2 | 3 | 4 | 5): Promise<void> => {
     if (!current) {
@@ -99,17 +104,40 @@ const PracticeView: FC = () => {
   return (
     <PageContainer className="max-w-3xl">
       <PageHeader
+        backHref={APP_ROUTES.kit(kitId)}
+        backLabel="Back to kit"
+        eyebrow={kit.data.kit?.role.title}
         title="Practice flashcards"
-        description={`Card ${(position % ordered.length) + 1} of ${ordered.length} · ${covered} covered · ${remaining} remaining. Weakest cards come first.`}
+        description="Focus on the cards you are least confident about."
       />
+
+      <div className="mb-6 space-y-3 rounded-xl border p-4">
+        <div className="flex flex-wrap items-center gap-2 text-sm">
+          <Badge variant="secondary">
+            <Dumbbell className="size-3" aria-hidden="true" />
+            Card {(position % ordered.length) + 1} of {ordered.length}
+          </Badge>
+          <Badge variant="outline">
+            <Target className="size-3" aria-hidden="true" />
+            {covered} covered
+          </Badge>
+          <Badge variant="outline">{remaining} remaining</Badge>
+        </div>
+        <Progress value={progress} aria-label={`${covered} of ${ordered.length} cards covered`} />
+      </div>
 
       <Card className="min-h-80 justify-between">
         <CardContent className="space-y-8">
-          <div>
-            <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-              Question
-            </p>
-            <p className="mt-3 text-xl leading-relaxed font-medium">{current?.front}</p>
+          <div className="flex items-start gap-3">
+            <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted">
+              <Brain className="size-4 text-muted-foreground" aria-hidden="true" />
+            </span>
+            <div>
+              <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                Question
+              </p>
+              <p className="mt-1.5 text-xl leading-relaxed font-medium">{current?.front}</p>
+            </div>
           </div>
 
           {revealed ? (
@@ -121,25 +149,37 @@ const PracticeView: FC = () => {
             </div>
           ) : (
             <Button variant="outline" onClick={() => setRevealed(true)}>
+              <Eye className="size-4" aria-hidden="true" />
               Reveal answer
             </Button>
           )}
 
           {revealed ? (
             <div>
-              <p className="mb-3 text-sm font-medium">How confident were you?</p>
-              <div className="grid grid-cols-5 gap-2">
+              <p className="mb-3 text-sm font-medium">How confident are you?</p>
+              <div className="grid grid-cols-5 gap-2" role="group" aria-label="Confidence level">
                 {([1, 2, 3, 4, 5] as const).map((confidence) => (
                   <Button
                     key={confidence}
                     type="button"
                     variant="outline"
+                    className="h-11"
                     disabled={recordPractice.isPending}
                     onClick={() => handleConfidence(confidence)}
+                    aria-label={`Confidence ${confidence}${confidence === 1 ? ', needs work' : confidence === 3 ? ', okay' : confidence === 5 ? ', confident' : ''}`}
                   >
-                    {confidence}
+                    {recordPractice.isPending ? (
+                      <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />
+                    ) : (
+                      confidence
+                    )}
                   </Button>
                 ))}
+              </div>
+              <div className="mt-2 flex justify-between text-xs text-muted-foreground">
+                <span>1 · Needs work</span>
+                <span>3 · Okay</span>
+                <span>5 · Confident</span>
               </div>
             </div>
           ) : null}

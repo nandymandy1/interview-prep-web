@@ -32,10 +32,20 @@ const AppShell: FC<AppShellProps> = ({ children }) => {
   return (
     <div className="min-h-svh bg-background">
       <header className="sticky top-0 z-20 border-b bg-background/95 backdrop-blur">
-        <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <Link href={APP_ROUTES.dashboard} className="font-semibold tracking-tight">
-            {APP_NAME}
-          </Link>
+        <div className="mx-auto flex h-14 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-6">
+            <Link href={APP_ROUTES.dashboard} className="font-semibold tracking-tight">
+              {APP_NAME}
+            </Link>
+            <nav aria-label="Primary">
+              <Link
+                href={APP_ROUTES.dashboard}
+                className="rounded-md text-sm text-muted-foreground transition-colors outline-none hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50"
+              >
+                Interview kits
+              </Link>
+            </nav>
+          </div>
           <div className="flex items-center gap-3">
             {user ? (
               <span className="hidden text-sm text-muted-foreground sm:inline">{user.email}</span>
