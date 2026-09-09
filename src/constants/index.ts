@@ -30,6 +30,10 @@ export const API_ENDPOINTS = {
       `/kits/${kitId}/questions/${questionId}`,
     questions: (kitId: string): string => `/kits/${kitId}/questions`,
     reorderQuestions: (kitId: string): string => `/kits/${kitId}/questions/reorder`,
+    flashcard: (kitId: string, flashcardId: string): string =>
+      `/kits/${kitId}/flashcards/${flashcardId}`,
+    flashcards: (kitId: string): string => `/kits/${kitId}/flashcards`,
+    brief: (kitId: string): string => `/kits/${kitId}/brief`,
     practice: (kitId: string, flashcardId: string): string =>
       `/kits/${kitId}/practice/${flashcardId}`,
   },

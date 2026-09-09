@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { type FC, useState } from 'react';
+import { type FC, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import ErrorState from '@/components/common/error-state';
 import LoadingState from '@/components/common/loading-state';
@@ -12,16 +12,59 @@ import Card from '@/components/ui/card';
 import CardContent from '@/components/ui/card-content';
 import { useKit, useRecordPractice } from '@/hooks/kits/use-kits';
 import { getErrorMessage } from '@/lib/error';
+import type { KitFlashcard } from '@/types/kits/kit.type';
+
+// Weakest-first ordering: unpractised cards first, then lowest confidence,
+// then original flashcard order. No spaced-repetition engine.
+const orderFlashcards = (
+  flashcards: KitFlashcard[],
+  confidenceById: Map<string, number>,
+): KitFlashcard[] =>
+  flashcards
+    .map((card, order) => ({ card, order }))
+    .sort((a, b) => {
+      const confidenceA = confidenceById.get(a.card.id);
+      const confidenceB = confidenceById.get(b.card.id);
+
+      if (confidenceA === undefined && confidenceB !== undefined) {
+        return -1;
+      }
+
+      if (confidenceA !== undefined && confidenceB === undefined) {
+        return 1;
+      }
+
+      if (confidenceA !== undefined && confidenceB !== undefined && confidenceA !== confidenceB) {
+        return confidenceA - confidenceB;
+      }
+
+      return a.order - b.order;
+    })
+    .map((entry) => entry.card);
 
 const PracticeView: FC = () => {
   const params = useParams<{ kitId: string }>();
   const kitId = params.kitId;
   const kit = useKit(kitId);
-  const [index, setIndex] = useState(0);
+  const [position, setPosition] = useState(0);
   const [revealed, setRevealed] = useState(false);
 
-  const flashcards = kit.data?.kit?.flashcards ?? [];
-  const current = flashcards[index];
+  const flashcards = useMemo(() => kit.data?.kit?.flashcards ?? [], [kit.data?.kit?.flashcards]);
+  const confidenceById = useMemo(() => {
+    const latest = new Map<string, number>();
+
+    for (const record of kit.data?.practiceRecords ?? []) {
+      latest.set(record.flashcardId, record.confidence);
+    }
+
+    return latest;
+  }, [kit.data?.practiceRecords]);
+
+  const ordered = useMemo(
+    () => orderFlashcards(flashcards, confidenceById),
+    [flashcards, confidenceById],
+  );
+  const current = ordered[position % Math.max(ordered.length, 1)];
   const recordPractice = useRecordPractice(kitId, current?.id ?? '');
 
   if (kit.isPending) {
@@ -40,7 +83,18 @@ const PracticeView: FC = () => {
     );
   }
 
-  if (!kit.data.kit || flashcards.length === 0) {
+  if (kit.data.status !== 'completed' || !kit.data.kit) {
+    return (
+      <PageContainer>
+        <ErrorState
+          title="Kit is still generating"
+          message="Practice unlocks once generation completes. Check back after the kit is ready."
+        />
+      </PageContainer>
+    );
+  }
+
+  if (ordered.length === 0) {
     return (
       <PageContainer>
         <ErrorState
@@ -51,6 +105,9 @@ const PracticeView: FC = () => {
     );
   }
 
+  const covered = flashcards.filter((card) => confidenceById.has(card.id)).length;
+  const remaining = flashcards.length - covered;
+
   const handleConfidence = async (confidence: 1 | 2 | 3 | 4 | 5): Promise<void> => {
     if (!current) {
       return;
@@ -58,8 +115,7 @@ const PracticeView: FC = () => {
 
     try {
       await recordPractice.mutateAsync({ confidence });
-      const nextIndex = (index + 1) % flashcards.length;
-      setIndex(nextIndex);
+      setPosition((position + 1) % ordered.length);
       setRevealed(false);
     } catch (error) {
       toast.error(getErrorMessage(error));
@@ -70,7 +126,7 @@ const PracticeView: FC = () => {
     <PageContainer className="max-w-3xl">
       <PageHeader
         title="Practice flashcards"
-        description={`Card ${index + 1} of ${flashcards.length}. Reveal the answer, then record how confident you felt.`}
+        description={`Card ${(position % ordered.length) + 1} of ${ordered.length} · ${covered} covered · ${remaining} remaining. Weakest cards come first.`}
       />
 
       <Card className="min-h-80 justify-between">
@@ -79,7 +135,7 @@ const PracticeView: FC = () => {
             <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
               Question
             </p>
-            <p className="mt-3 text-xl leading-relaxed font-medium">{current.front}</p>
+            <p className="mt-3 text-xl leading-relaxed font-medium">{current?.front}</p>
           </div>
 
           {revealed ? (
@@ -87,7 +143,7 @@ const PracticeView: FC = () => {
               <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
                 Answer
               </p>
-              <p className="mt-2 text-sm leading-relaxed">{current.back}</p>
+              <p className="mt-2 text-sm leading-relaxed">{current?.back}</p>
             </div>
           ) : (
             <Button variant="outline" onClick={() => setRevealed(true)}>

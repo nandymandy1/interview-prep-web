@@ -101,6 +101,13 @@ export type KitDetailResult = {
   id: string;
   status: GenerationStatus;
   kit: InterviewKit | null;
+  practiceRecords: PracticeRecord[];
+};
+
+export type PracticeRecord = {
+  flashcardId: string;
+  confidence: number;
+  recordedAt: string;
 };
 
 export type GenerationStep = {
@@ -119,6 +126,7 @@ export type KitStatusResult = {
     code: string;
     message: string;
   };
+  updatedAt: string;
 };
 
 export type UpdateQuestionInput = Partial<
@@ -127,6 +135,27 @@ export type UpdateQuestionInput = Partial<
 
 export type ReorderQuestionsInput = {
   questionIds: string[];
+};
+
+export type AddQuestionInput = {
+  prompt: string;
+  answer_outline: string;
+  category: QuestionCategory;
+  difficulty?: QuestionDifficulty;
+  requirement_ids?: string[];
+};
+
+export type AddFlashcardInput = {
+  front: string;
+  back: string;
+  requirement_ids?: string[];
+};
+
+export type UpdateFlashcardInput = Partial<Pick<KitFlashcard, 'front' | 'back'>>;
+
+export type UpdateBriefInput = {
+  summary?: string;
+  what_they_do?: string;
 };
 
 export type RegenerateSectionInput =

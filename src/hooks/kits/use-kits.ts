@@ -4,9 +4,14 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { QUERY_KEYS } from '@/constants';
 import { serviceContainer } from '@/providers/service-container';
 import type {
+  AddFlashcardInput,
+  AddQuestionInput,
   CreateKitInput,
   RecordPracticeInput,
   RegenerateSectionInput,
+  ReorderQuestionsInput,
+  UpdateBriefInput,
+  UpdateFlashcardInput,
   UpdateQuestionInput,
 } from '@/types/kits/kit.type';
 
@@ -74,8 +79,92 @@ export const useUpdateQuestion = (kitId: string, questionId: string) => {
   });
 };
 
-export const useRecordPractice = (kitId: string, flashcardId: string) =>
-  useMutation({
+const useInvalidateKit = (kitId: string) => {
+  const queryClient = useQueryClient();
+
+  return async (): Promise<void> => {
+    await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.kits.detail(kitId) });
+  };
+};
+
+export const useAddQuestion = (kitId: string) => {
+  const invalidateKit = useInvalidateKit(kitId);
+
+  return useMutation({
+    mutationFn: (input: AddQuestionInput) =>
+      serviceContainer.kitService().addQuestion(kitId, input),
+    onSuccess: invalidateKit,
+  });
+};
+
+export const useReorderQuestions = (kitId: string) => {
+  const invalidateKit = useInvalidateKit(kitId);
+
+  return useMutation({
+    mutationFn: (input: ReorderQuestionsInput) =>
+      serviceContainer.kitService().reorderQuestions(kitId, input),
+    onSuccess: invalidateKit,
+  });
+};
+
+export const useDeleteQuestion = (kitId: string) => {
+  const invalidateKit = useInvalidateKit(kitId);
+
+  return useMutation({
+    mutationFn: (questionId: string) =>
+      serviceContainer.kitService().deleteQuestion(kitId, questionId),
+    onSuccess: invalidateKit,
+  });
+};
+
+export const useAddFlashcard = (kitId: string) => {
+  const invalidateKit = useInvalidateKit(kitId);
+
+  return useMutation({
+    mutationFn: (input: AddFlashcardInput) =>
+      serviceContainer.kitService().addFlashcard(kitId, input),
+    onSuccess: invalidateKit,
+  });
+};
+
+export const useUpdateFlashcard = (kitId: string, flashcardId: string) => {
+  const invalidateKit = useInvalidateKit(kitId);
+
+  return useMutation({
+    mutationFn: (input: UpdateFlashcardInput) =>
+      serviceContainer.kitService().updateFlashcard(kitId, flashcardId, input),
+    onSuccess: invalidateKit,
+  });
+};
+
+export const useDeleteFlashcard = (kitId: string) => {
+  const invalidateKit = useInvalidateKit(kitId);
+
+  return useMutation({
+    mutationFn: (flashcardId: string) =>
+      serviceContainer.kitService().deleteFlashcard(kitId, flashcardId),
+    onSuccess: invalidateKit,
+  });
+};
+
+export const useUpdateBrief = (kitId: string) => {
+  const invalidateKit = useInvalidateKit(kitId);
+
+  return useMutation({
+    mutationFn: (input: UpdateBriefInput) =>
+      serviceContainer.kitService().updateBrief(kitId, input),
+    onSuccess: invalidateKit,
+  });
+};
+
+export const useRecordPractice = (kitId: string, flashcardId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
     mutationFn: (input: RecordPracticeInput) =>
       serviceContainer.kitService().recordPractice(kitId, flashcardId, input),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.kits.detail(kitId) });
+    },
   });
+};

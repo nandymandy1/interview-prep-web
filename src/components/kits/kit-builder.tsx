@@ -1,0 +1,563 @@
+'use client';
+
+import { type FC, useState } from 'react';
+import { toast } from 'sonner';
+import Badge from '@/components/ui/badge';
+import Button from '@/components/ui/button';
+import Card from '@/components/ui/card';
+import CardContent from '@/components/ui/card-content';
+import CardHeader from '@/components/ui/card-header';
+import CardTitle from '@/components/ui/card-title';
+import Input from '@/components/ui/input';
+import Label from '@/components/ui/label';
+import Textarea from '@/components/ui/textarea';
+import {
+  useAddFlashcard,
+  useAddQuestion,
+  useDeleteFlashcard,
+  useDeleteQuestion,
+  useRegenerateKitSection,
+  useReorderQuestions,
+  useUpdateBrief,
+  useUpdateFlashcard,
+  useUpdateQuestion,
+} from '@/hooks/kits/use-kits';
+import { getErrorMessage } from '@/lib/error';
+import type {
+  InterviewKit,
+  KitFlashcard,
+  KitQuestion,
+  QuestionCategory,
+  QuestionDifficulty,
+} from '@/types/kits/kit.type';
+
+type KitBuilderProps = {
+  kitId: string;
+  kit: InterviewKit;
+};
+
+const CATEGORIES: QuestionCategory[] = ['technical', 'behavioural', 'system-design', 'company-fit'];
+
+const categoryLabel = (category: QuestionCategory): string =>
+  category === 'system-design' ? 'System Design' : category[0]?.toUpperCase() + category.slice(1);
+
+type QuestionEditorProps = {
+  kitId: string;
+  question: KitQuestion;
+  questionIds: string[];
+};
+
+const QuestionEditor: FC<QuestionEditorProps> = ({ kitId, question, questionIds }) => {
+  const [prompt, setPrompt] = useState(question.prompt);
+  const [outline, setOutline] = useState(question.answer_outline);
+  const [category, setCategory] = useState<QuestionCategory>(question.category);
+  const [difficulty, setDifficulty] = useState<QuestionDifficulty>(question.difficulty);
+  const updateQuestion = useUpdateQuestion(kitId, question.id);
+  const deleteQuestion = useDeleteQuestion(kitId);
+  const reorderQuestions = useReorderQuestions(kitId);
+
+  const dirty =
+    prompt !== question.prompt ||
+    outline !== question.answer_outline ||
+    category !== question.category ||
+    difficulty !== question.difficulty;
+
+  const save = async (): Promise<void> => {
+    try {
+      await updateQuestion.mutateAsync({
+        prompt,
+        answer_outline: outline,
+        category,
+        difficulty,
+      });
+      toast.success('Question saved');
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+    }
+  };
+
+  const move = async (direction: -1 | 1): Promise<void> => {
+    const from = questionIds.indexOf(question.id);
+    const to = from + direction;
+
+    if (from < 0 || to < 0 || to >= questionIds.length) {
+      return;
+    }
+
+    const next = [...questionIds];
+    const moved = next.splice(from, 1)[0] as string;
+    next.splice(to, 0, moved);
+
+    try {
+      await reorderQuestions.mutateAsync({ questionIds: next });
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+    }
+  };
+
+  const remove = async (): Promise<void> => {
+    try {
+      await deleteQuestion.mutateAsync(question.id);
+      toast.success('Question deleted');
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+    }
+  };
+
+  return (
+    <Card className="gap-3 py-4">
+      <CardContent className="space-y-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge variant="secondary">{question.category}</Badge>
+          <Badge variant="outline">Difficulty {question.difficulty}</Badge>
+          <span className="text-xs text-muted-foreground">{question.id}</span>
+        </div>
+        <div className="space-y-1">
+          <Label htmlFor={`prompt-${question.id}`}>Prompt</Label>
+          <Textarea
+            id={`prompt-${question.id}`}
+            value={prompt}
+            onChange={(event) => setPrompt(event.target.value)}
+            rows={3}
+          />
+        </div>
+        <div className="space-y-1">
+          <Label htmlFor={`outline-${question.id}`}>Answer outline</Label>
+          <Textarea
+            id={`outline-${question.id}`}
+            value={outline}
+            onChange={(event) => setOutline(event.target.value)}
+            rows={3}
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1">
+            <Label htmlFor={`category-${question.id}`}>Category</Label>
+            <select
+              id={`category-${question.id}`}
+              className="h-9 w-full rounded-md border bg-background px-3 text-sm"
+              value={category}
+              onChange={(event) => setCategory(event.target.value as QuestionCategory)}
+            >
+              {CATEGORIES.map((entry) => (
+                <option key={entry} value={entry}>
+                  {categoryLabel(entry)}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor={`difficulty-${question.id}`}>Difficulty</Label>
+            <select
+              id={`difficulty-${question.id}`}
+              className="h-9 w-full rounded-md border bg-background px-3 text-sm"
+              value={difficulty}
+              onChange={(event) => setDifficulty(Number(event.target.value) as QuestionDifficulty)}
+            >
+              {([1, 2, 3] as const).map((entry) => (
+                <option key={entry} value={entry}>
+                  {entry}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            type="button"
+            size="sm"
+            disabled={!dirty || updateQuestion.isPending}
+            onClick={() => void save()}
+          >
+            Save
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            disabled={reorderQuestions.isPending}
+            onClick={() => void move(-1)}
+          >
+            Up
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            disabled={reorderQuestions.isPending}
+            onClick={() => void move(1)}
+          >
+            Down
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant="destructive"
+            disabled={deleteQuestion.isPending}
+            onClick={() => void remove()}
+          >
+            Delete
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+type FlashcardEditorProps = {
+  kitId: string;
+  flashcard: KitFlashcard;
+};
+
+const FlashcardEditor: FC<FlashcardEditorProps> = ({ kitId, flashcard }) => {
+  const [front, setFront] = useState(flashcard.front);
+  const [back, setBack] = useState(flashcard.back);
+  const updateFlashcard = useUpdateFlashcard(kitId, flashcard.id);
+  const deleteFlashcard = useDeleteFlashcard(kitId);
+
+  const dirty = front !== flashcard.front || back !== flashcard.back;
+
+  const save = async (): Promise<void> => {
+    try {
+      await updateFlashcard.mutateAsync({ front, back });
+      toast.success('Flashcard saved');
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+    }
+  };
+
+  const remove = async (): Promise<void> => {
+    try {
+      await deleteFlashcard.mutateAsync(flashcard.id);
+      toast.success('Flashcard deleted');
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+    }
+  };
+
+  return (
+    <Card className="gap-3 py-4">
+      <CardContent className="space-y-3">
+        <div className="space-y-1">
+          <Label htmlFor={`front-${flashcard.id}`}>Front</Label>
+          <Textarea
+            id={`front-${flashcard.id}`}
+            value={front}
+            onChange={(event) => setFront(event.target.value)}
+            rows={2}
+          />
+        </div>
+        <div className="space-y-1">
+          <Label htmlFor={`back-${flashcard.id}`}>Back</Label>
+          <Textarea
+            id={`back-${flashcard.id}`}
+            value={back}
+            onChange={(event) => setBack(event.target.value)}
+            rows={2}
+          />
+        </div>
+        <div className="flex gap-2">
+          <Button
+            type="button"
+            size="sm"
+            disabled={!dirty || updateFlashcard.isPending}
+            onClick={() => void save()}
+          >
+            Save
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant="destructive"
+            disabled={deleteFlashcard.isPending}
+            onClick={() => void remove()}
+          >
+            Delete
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+const KitBuilder: FC<KitBuilderProps> = ({ kitId, kit }) => {
+  const regenerate = useRegenerateKitSection(kitId);
+  const updateBrief = useUpdateBrief(kitId);
+  const addQuestion = useAddQuestion(kitId);
+  const addFlashcard = useAddFlashcard(kitId);
+
+  const [summary, setSummary] = useState(kit.company_brief.summary);
+  const [whatTheyDo, setWhatTheyDo] = useState(kit.company_brief.what_they_do);
+  const [newPrompt, setNewPrompt] = useState('');
+  const [newOutline, setNewOutline] = useState('');
+  const [newCategory, setNewCategory] = useState<QuestionCategory>('technical');
+  const [newFront, setNewFront] = useState('');
+  const [newBack, setNewBack] = useState('');
+
+  const questionIds = kit.questions.map((question) => question.id);
+  const briefDirty =
+    summary !== kit.company_brief.summary || whatTheyDo !== kit.company_brief.what_they_do;
+
+  const runRegenerate = async (
+    input: Parameters<typeof regenerate.mutateAsync>[0],
+    label: string,
+  ): Promise<void> => {
+    try {
+      await regenerate.mutateAsync(input);
+      toast.success(`${label} regenerated — your manual edits were preserved`);
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+    }
+  };
+
+  const saveBrief = async (): Promise<void> => {
+    try {
+      await updateBrief.mutateAsync({ summary, what_they_do: whatTheyDo });
+      toast.success('Company brief saved');
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+    }
+  };
+
+  const createQuestion = async (): Promise<void> => {
+    if (!newPrompt.trim() || !newOutline.trim()) {
+      toast.error('Prompt and answer outline are required');
+      return;
+    }
+
+    try {
+      await addQuestion.mutateAsync({
+        prompt: newPrompt.trim(),
+        answer_outline: newOutline.trim(),
+        category: newCategory,
+      });
+      setNewPrompt('');
+      setNewOutline('');
+      toast.success('Question added');
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+    }
+  };
+
+  const createFlashcard = async (): Promise<void> => {
+    if (!newFront.trim() || !newBack.trim()) {
+      toast.error('Front and back are required');
+      return;
+    }
+
+    try {
+      await addFlashcard.mutateAsync({ front: newFront.trim(), back: newBack.trim() });
+      setNewFront('');
+      setNewBack('');
+      toast.success('Flashcard added');
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+    }
+  };
+
+  return (
+    <div className="space-y-8">
+      <section className="space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-xl font-semibold">Company brief</h2>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            disabled={regenerate.isPending}
+            onClick={() => void runRegenerate({ section: 'company_brief' }, 'Company brief')}
+          >
+            Regenerate brief
+          </Button>
+        </div>
+        <Card>
+          <CardContent className="space-y-3 pt-6">
+            <div className="space-y-1">
+              <Label htmlFor="brief-summary">Summary</Label>
+              <Textarea
+                id="brief-summary"
+                value={summary}
+                onChange={(event) => setSummary(event.target.value)}
+                rows={4}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="brief-what">What they do</Label>
+              <Textarea
+                id="brief-what"
+                value={whatTheyDo}
+                onChange={(event) => setWhatTheyDo(event.target.value)}
+                rows={3}
+              />
+            </div>
+            <Button
+              type="button"
+              size="sm"
+              disabled={!briefDirty || updateBrief.isPending}
+              onClick={() => void saveBrief()}
+            >
+              Save brief
+            </Button>
+          </CardContent>
+        </Card>
+      </section>
+
+      <section className="space-y-4">
+        <h2 className="text-xl font-semibold">Questions</h2>
+        {CATEGORIES.map((category) => {
+          const group = kit.questions.filter((question) => question.category === category);
+
+          return (
+            <div key={category} className="space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <h3 className="font-medium">
+                  {categoryLabel(category)} ({group.length})
+                </h3>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  disabled={regenerate.isPending}
+                  onClick={() =>
+                    void runRegenerate({ section: 'questions', category }, categoryLabel(category))
+                  }
+                >
+                  Regenerate {categoryLabel(category)}
+                </Button>
+              </div>
+              {group.map((question) => (
+                <QuestionEditor
+                  key={question.id}
+                  kitId={kitId}
+                  question={question}
+                  questionIds={questionIds}
+                />
+              ))}
+            </div>
+          );
+        })}
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Add a manual question</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="space-y-1">
+              <Label htmlFor="new-prompt">Prompt</Label>
+              <Textarea
+                id="new-prompt"
+                value={newPrompt}
+                onChange={(event) => setNewPrompt(event.target.value)}
+                rows={2}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="new-outline">Answer outline</Label>
+              <Textarea
+                id="new-outline"
+                value={newOutline}
+                onChange={(event) => setNewOutline(event.target.value)}
+                rows={2}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="new-category">Category</Label>
+              <select
+                id="new-category"
+                className="h-9 w-full rounded-md border bg-background px-3 text-sm"
+                value={newCategory}
+                onChange={(event) => setNewCategory(event.target.value as QuestionCategory)}
+              >
+                {CATEGORIES.map((entry) => (
+                  <option key={entry} value={entry}>
+                    {categoryLabel(entry)}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <Button
+              type="button"
+              size="sm"
+              disabled={addQuestion.isPending}
+              onClick={() => void createQuestion()}
+            >
+              Add question
+            </Button>
+          </CardContent>
+        </Card>
+      </section>
+
+      <section className="space-y-4">
+        <h2 className="text-xl font-semibold">Flashcards ({kit.flashcards.length})</h2>
+        <div className="grid gap-3 md:grid-cols-2">
+          {kit.flashcards.map((flashcard) => (
+            <FlashcardEditor key={flashcard.id} kitId={kitId} flashcard={flashcard} />
+          ))}
+        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Add a manual flashcard</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="space-y-1">
+              <Label htmlFor="new-front">Front</Label>
+              <Input
+                id="new-front"
+                value={newFront}
+                onChange={(event) => setNewFront(event.target.value)}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="new-back">Back</Label>
+              <Input
+                id="new-back"
+                value={newBack}
+                onChange={(event) => setNewBack(event.target.value)}
+              />
+            </div>
+            <Button
+              type="button"
+              size="sm"
+              disabled={addFlashcard.isPending}
+              onClick={() => void createFlashcard()}
+            >
+              Add flashcard
+            </Button>
+          </CardContent>
+        </Card>
+      </section>
+
+      <section className="space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-xl font-semibold">Study schedule</h2>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            disabled={regenerate.isPending}
+            onClick={() => void runRegenerate({ section: 'schedule' }, 'Schedule')}
+          >
+            Regenerate Schedule
+          </Button>
+        </div>
+        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+          {kit.schedule.days.map((day) => (
+            <Card key={day.day} className="gap-3 py-4">
+              <CardContent>
+                <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                  Day {day.day}
+                </p>
+                <p className="mt-1 font-medium">{day.focus}</p>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  {day.minutes} minutes · {day.question_ids.length} questions
+                </p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+};
+
+export default KitBuilder;

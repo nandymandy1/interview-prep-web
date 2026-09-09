@@ -2,6 +2,8 @@ import { API_ENDPOINTS } from '@/constants';
 import type { ApiClientService } from '@/services/http/api-client.service';
 import type { PaginatedResult } from '@/types/pagination.type';
 import type {
+  AddFlashcardInput,
+  AddQuestionInput,
   CreateKitInput,
   CreateKitResult,
   InterviewKit,
@@ -11,6 +13,8 @@ import type {
   RecordPracticeInput,
   RegenerateSectionInput,
   ReorderQuestionsInput,
+  UpdateBriefInput,
+  UpdateFlashcardInput,
   UpdateQuestionInput,
 } from '@/types/kits/kit.type';
 
@@ -75,6 +79,44 @@ export class KitService {
   deleteQuestion(kitId: string, questionId: string): Promise<InterviewKit> {
     return this.dependencies.apiClient.delete<InterviewKit>(
       API_ENDPOINTS.kits.question(kitId, questionId),
+    );
+  }
+
+  addQuestion(kitId: string, input: AddQuestionInput): Promise<InterviewKit> {
+    return this.dependencies.apiClient.post<InterviewKit, AddQuestionInput>(
+      API_ENDPOINTS.kits.questions(kitId),
+      input,
+    );
+  }
+
+  addFlashcard(kitId: string, input: AddFlashcardInput): Promise<InterviewKit> {
+    return this.dependencies.apiClient.post<InterviewKit, AddFlashcardInput>(
+      API_ENDPOINTS.kits.flashcards(kitId),
+      input,
+    );
+  }
+
+  updateFlashcard(
+    kitId: string,
+    flashcardId: string,
+    input: UpdateFlashcardInput,
+  ): Promise<InterviewKit> {
+    return this.dependencies.apiClient.patch<InterviewKit, UpdateFlashcardInput>(
+      API_ENDPOINTS.kits.flashcard(kitId, flashcardId),
+      input,
+    );
+  }
+
+  deleteFlashcard(kitId: string, flashcardId: string): Promise<InterviewKit> {
+    return this.dependencies.apiClient.delete<InterviewKit>(
+      API_ENDPOINTS.kits.flashcard(kitId, flashcardId),
+    );
+  }
+
+  updateBrief(kitId: string, input: UpdateBriefInput): Promise<InterviewKit> {
+    return this.dependencies.apiClient.patch<InterviewKit, UpdateBriefInput>(
+      API_ENDPOINTS.kits.brief(kitId),
+      input,
     );
   }
 
