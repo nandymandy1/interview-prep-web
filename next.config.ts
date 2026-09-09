@@ -1,13 +1,6 @@
 import type { NextConfig } from 'next';
-import { resolveApiProxyTarget } from './src/lib/proxy-target';
 
-const apiProxyTarget = resolveApiProxyTarget(process.env.API_PROXY_TARGET);
-
-if (apiProxyTarget === undefined) {
-  console.warn(
-    '[web] API_PROXY_TARGET is missing or invalid — /api requests will NOT be proxied to Express.',
-  );
-}
+const API_PROXY_TARGET = 'https://nandy1.i-dacs.com';
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
@@ -15,18 +8,14 @@ const nextConfig: NextConfig = {
   // keeps the production image small without dev dependencies.
   output: 'standalone',
   async rewrites() {
-    if (!apiProxyTarget) {
-      return [];
-    }
-
     return [
       {
         source: '/api/:path*',
-        destination: `${apiProxyTarget}/api/:path*`,
+        destination: `${API_PROXY_TARGET}/api/:path*`,
       },
       {
         source: '/health',
-        destination: `${apiProxyTarget}/health`,
+        destination: `${API_PROXY_TARGET}/health`,
       },
     ];
   },
